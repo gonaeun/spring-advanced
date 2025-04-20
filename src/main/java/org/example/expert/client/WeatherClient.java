@@ -23,26 +23,35 @@ public class WeatherClient {
     }
 
     public String getTodayWeather() {
+        // 날씨 API에서 WeatherDto[] 형태로 응답 받아옴
         ResponseEntity<WeatherDto[]> responseEntity =
                 restTemplate.getForEntity(buildWeatherApiUri(), WeatherDto[].class);
 
-        WeatherDto[] weatherArray = responseEntity.getBody();
+        // 응답이 200ok가 아닐 때 예외 발생
+        // 리팩토링 : 날씨 데이터 추출하기 전에, 응답 여부 먼저 확인
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             throw new ServerException("날씨 데이터를 가져오는데 실패했습니다. 상태 코드: " + responseEntity.getStatusCode());
-        } else {
-            if (weatherArray == null || weatherArray.length == 0) {
-                throw new ServerException("날씨 데이터가 없습니다.");
-            }
         }
 
+        // 응답에서 날씨 데이터 추출
+        WeatherDto[] weatherArray = responseEntity.getBody();
+
+         // 응답이 null이거나 배열이 비었을 때 예외 발생
+        if (weatherArray == null || weatherArray.length == 0) {
+            throw new ServerException("날씨 데이터가 없습니다.");
+        }
+
+        // 오늘 날짜 생성
         String today = getCurrentDate();
 
+        // 오늘 날짜와 일치하는 데이터가 있는 경우, 해당 날씨 반환
         for (WeatherDto weatherDto : weatherArray) {
             if (today.equals(weatherDto.getDate())) {
                 return weatherDto.getWeather();
             }
         }
 
+        // 오늘 날짜에 해당하는 데이터가 없으면 예외 발생
         throw new ServerException("오늘에 해당하는 날씨 데이터를 찾을 수 없습니다.");
     }
 
