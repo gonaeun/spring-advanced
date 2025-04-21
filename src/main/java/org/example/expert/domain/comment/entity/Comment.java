@@ -15,6 +15,7 @@ public class Comment extends Timestamped {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(length = 500)  // sql의 DDL도 수행
     private String contents;
 
     @ManyToOne(fetch = FetchType.LAZY)
